@@ -2,6 +2,9 @@ package coverage
 
 import (
 	"os"
+	"reflect"
+	"testing"
+	"time"
 )
 
 // DO NOT EDIT THIS FUNCTION
@@ -17,4 +20,212 @@ func init() {
 }
 
 // WRITE YOUR CODE BELOW
+
+func TestLen(t *testing.T){
+	people:=People{
+		Person{},
+		Person{},
+		Person{},
+	}
+
+	if people.Len() !=3 {
+		t.Errorf("expected 3, but got %d",people.Len())
+	}
+}
+
+func TestSwap(t *testing.T){
+	firstP:=Person{}
+	secondP:=Person{}
+	people:=People{
+		firstP,
+		secondP,
+	}
+
+	people.Swap(0,1)
+
+	if people[0]!=secondP || people[1]!=firstP{
+		t.Error("swap did not work")
+	}
+}
+
+func TestLessSameBithday(t *testing.T){
+
+	birthDay:=time.Date(1990,time.March,10,0,0,0,0,time.UTC)
+
+	p1:=Person{
+		firstName: "aaaa",
+		lastName: "bbbb",
+		birthDay: birthDay,
+	}
+	p2:=Person{
+		firstName: "aaaa",
+		lastName: "bbbb",
+		birthDay: birthDay,
+	}
+	p3:=Person{
+		firstName: "bbbb",
+		lastName: "bbbb",
+		birthDay: birthDay,
+	}
+	p4:=Person{
+		firstName: "aaaa",
+		lastName: "cccc",
+		birthDay: birthDay,
+	}
+	p5:=Person{
+		firstName: "aaaa",
+		lastName: "cccc",
+		birthDay: birthDay.Add(time.Hour*100),
+	}
+
+	people:=People{
+		p1,
+		p2,
+		p3,
+		p4,
+		p5,
+	}
+
+	if people.Less(0,1){
+		t.Error("expected p1 < p2")
+	}
+
+	if !people.Less(1,2){
+		t.Error("expected p2 < p3")
+	}
+	if !people.Less(0,3){
+		t.Error("expected p1 < p4")
+	}
+	if people.Less(3,4){
+		t.Error("expected p4 < p5")
+	}
+}
+
+func TestNew(t *testing.T) {
+	type args struct {
+		str string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *Matrix
+		wantErr bool
+	}{
+		{
+			name:"Matrix 2 by 3, ok test",
+			args: args{str:`1 2 3
+			4 5 6`},
+			want: &Matrix{
+				rows: 2,
+				cols: 3,
+				data: []int{1,2,3,4,5,6},
+			},
+			wantErr: false,
+		},
+		{
+			name:"different rows",
+			args: args{str:`1 2 3
+			4 5 6 7`},
+			want: nil,
+			wantErr: true,
+		},
+		{
+			name:"letters in matrix",
+			args: args{str:`1 2 s3 4
+			4 5 6 7`},
+			want: nil,
+			wantErr: true,
+		},
+
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := New(tt.args.str)
+			if err != nil && !tt.wantErr {
+				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("New() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMatrix_Rows(t *testing.T) {
+	tests := []struct {
+		name string
+		m    Matrix
+		want [][]int
+	}{
+		{
+			name:"test rows",
+			m:Matrix{rows: 2,cols: 3,data: []int{1,2,3,4,5,6}},
+			want: [][]int{{1,2,3},{4,5,6}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.Rows(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Matrix.Rows() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMatrix_Cols(t *testing.T) {
+	tests := []struct {
+		name string
+		m    Matrix
+		want [][]int
+	}{
+		{
+			name:"test cols",
+			m:Matrix{rows: 2,cols: 3,data: []int{1,2,3,4,5,6}},
+			want: [][]int{{1,4},{2,5},{3,6}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.Cols(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Matrix.Cols() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMatrix_Set(t *testing.T) {
+	type args struct {
+		row   int
+		col   int
+		value int
+	}
+	tests := []struct {
+		name string
+		m    *Matrix
+		args args
+		want bool
+	}{
+		{
+			name:"set ok",
+			m:&Matrix{rows: 2,cols: 3,data: []int{1,2,3,4,5,6}},
+			args: args{row: 0,col:2,value:10},
+			want: true,
+		},
+		{
+			name:"set not ok - wrong indexes",
+			m:&Matrix{rows: 2,cols: 3,data: []int{1,2,3,4,5,6}},
+			args: args{row: -3,col:20,value:10},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.m.Set(tt.args.row, tt.args.col, tt.args.value); got != tt.want {
+				t.Errorf("Matrix.Set() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 
